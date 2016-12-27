@@ -3,7 +3,6 @@
 #include <memory.h>
 #include <unistd.h>
 #include <iostream>
-#include <skylander.h>
 #include "skylander.h"
 
 using namespace std;
@@ -11,7 +10,7 @@ using namespace std;
 void usage() {
     printf("\n"
             "Usage:\n"
-            "skylauncher [-o <filename>] [-i <filename> [-r]]\n"
+            "Skylauncher [-o <filename>] [-i <filename> [-r]]\n"
             "-i <filename>\t read Skylander Image from file (default: read from portal)\n"
             "-o <filename>\t write Skylander Image to file (default: write to portal)\n"
             "-r\t\t reset Skylander before writing (e.g. reset crystal)\n"
