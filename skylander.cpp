@@ -21,12 +21,43 @@ void SkylanderIO::ReadSkylander() throw(int) {
 
     PortalIO *port;
     port = new PortalIO();
+    port->SetPortalColor(0x00, 0xff, 0x00);
+    port->SetPortalColor(0x00, 0xff, 0x00);
+    port->SetPortalColor(0x00, 0xff, 0x00);
 
-    // must start with a read of block zero (only skylander 0)
-    port->ReadBlock(0, data, 0);
+    bool found = false;
+    bool first = true;
+    int count = 0;
+    while (!found) {
+        try {
+            // must start with a read of block zero (only skylander 0)
+            port->ReadBlock(0, data, 0);
+            printf("\n");
+            found = true;
+        } catch (int e) {
+            if (e != 11) {
+               throw e;
+            } else {
+                if (first) {
+                    printf("waiting for skylander ");
+                    first = false;
+                } else {
+                    count++;
+                    if (count == 10) {
+                        count = 0;
+                        printf(".");
+                    }
+                }
+            }
+            fflush(stdout);
+        }
+        if (found) {
+            found = true;
+        }
+    }
 
-    // I don't know that we need this, but the web driver sets the color when reading the data
-    port->SetPortalColor(0xC8, 0xC8, 0xC8);
+    port->SetPortalColor(0xff, 0x00, 0x00);
+    port->SetPortalColor(0xff, 0x00, 0x00);
 
     ptr = buffer;
     memcpy(ptr, data, sizeof(data));
@@ -37,6 +68,8 @@ void SkylanderIO::ReadSkylander() throw(int) {
         memcpy(ptr, data, sizeof(data));
     }
 
+    port->SetPortalColor(0x00, 0x00, 0xff);
+    port->SetPortalColor(0x00, 0x00, 0xff);
     delete port;
 }
 
@@ -71,6 +104,7 @@ void SkylanderIO::ResetSkylander() throw(int) {
 
 void SkylanderIO::ReadSkylanderFile(char *name) throw(int) {
     FILE *file;
+    int count;
     unsigned long fileLen;
 
     //Open file
@@ -81,15 +115,25 @@ void SkylanderIO::ReadSkylanderFile(char *name) throw(int) {
 
     //Get file length
     fseek(file, 0, SEEK_END);
-    fileLen = ftell(file);
+    fileLen = (unsigned long)ftell(file);
     fseek(file, 0, SEEK_SET);
 
     if (fileLen != 1024) {
         throw 2;
     }
     //Read file contents into buffer
-    fread(buffer, fileLen, 1, file);
+    count = (int) fread(buffer, fileLen, 1, file);
+    if (count < 1) {
+        fclose(file);
+        throw 3;
+    }
     fclose(file);
+}
+
+void SkylanderIO::FileExists(char *name) throw (int) {
+    if (realpath(name, NULL)) {
+        throw 4;
+    }
 }
 
 void SkylanderIO::WriteSkylanderFile(char *name, unsigned char *filedata) throw(int) {
@@ -100,8 +144,7 @@ void SkylanderIO::WriteSkylanderFile(char *name, unsigned char *filedata) throw(
     if (!file) {
         throw 1;
     }
-
-    count = fwrite(filedata, 1024, 1, file);
+    count = (int) fwrite(filedata, 1024, 1, file);
     if (count < 1) {
         fclose(file);
         throw 3;

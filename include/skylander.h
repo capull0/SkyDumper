@@ -28,6 +28,8 @@ public:
 
     void WriteSkylanderFile(char *name, unsigned char *filedata) throw(int);
 
+    void FileExists(char *name) throw (int);
+
     unsigned char *getSkylander() { return buffer; }
 
     bool IsAccessControlBlock(unsigned int blockIndex) { return blockIndex % 4 == 3; }

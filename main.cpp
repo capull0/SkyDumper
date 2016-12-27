@@ -10,9 +10,10 @@ using namespace std;
 void usage() {
     printf("\n"
             "Usage:\n"
-            "Skylauncher [-o <filename>] [-i <filename> [-r]]\n"
+            "Skylauncher [-o <filename> | -d] [-i <filename> [-r]]\n"
             "-i <filename>\t read Skylander Image from file (default: read from portal)\n"
             "-o <filename>\t write Skylander Image to file (default: write to portal)\n"
+            "-d\t\t write Skylander image to file <Skylander-ID>.bin\n"
             "-r\t\t reset Skylander before writing (e.g. reset crystal)\n"
     );
 }
@@ -20,14 +21,15 @@ void usage() {
 int main(int argc, char *argv[]) {
     unsigned char *buffer;
 
-    bool reset, verbose;
+    bool dump, reset, verbose;
 
     char *inFile, *outFile;
 
-    const static char *legal_flags = "hri:o:v";
+    const static char *legal_flags = "hrdi:o:v";
 
     inFile = NULL;
     outFile = NULL;
+    dump = false;
     reset = false;
     verbose = false;
     SkylanderIO *skio;
@@ -39,6 +41,9 @@ int main(int argc, char *argv[]) {
             case 'i':
                 inFile = new char[strlen(optarg) + 1];
                 strcpy(inFile, optarg);
+                break;
+            case 'd':
+                dump = true;
                 break;
             case 'o':
                 outFile = new char[strlen(optarg) + 1];
@@ -53,7 +58,6 @@ int main(int argc, char *argv[]) {
             case 'h':
                 usage();
                 exit(0);
-                break;
             default:
                 usage();
                 exit(0);
@@ -62,7 +66,7 @@ int main(int argc, char *argv[]) {
 
     try {
         // validate command line options
-        if (!inFile && !outFile) {
+        if (!inFile && !outFile && !dump) {
             printf("missing arguments -i <file> or -o <file>\n");
             usage();
             exit(0);
@@ -71,15 +75,15 @@ int main(int argc, char *argv[]) {
         skio = new SkylanderIO();
 
         if (inFile) {
-            printf("Read Skylander Image from %s\n\n", inFile);
+            printf("Read Skylander Image from %s\n", inFile);
             skio->ReadSkylanderFile(inFile);
         } else {
-            printf("Read/Dump Skylander from portal\n\n");
+            printf("Read/Dump Skylander from portal\n");
             skio->ReadSkylander();
         }
 
         if (reset) {
-            printf("Reset Skylander\n\n");
+            printf("Reset Skylander\n");
             skio->ResetSkylander();
         }
 
@@ -87,17 +91,26 @@ int main(int argc, char *argv[]) {
         if (verbose)
             skio->dump(buffer, 1024);
 
+        if (dump) {
+            char f[16];
+            sprintf(f, "%02X%02X.bin", buffer[0x11], buffer[0x10]);
+
+            outFile = new char[strlen(f) + 1];
+            strcpy(outFile, f);
+        }
+
         if (outFile) {
-            printf("Write Skylander Image to %s\n\n", outFile);
+            skio->FileExists(outFile);
+            printf("Write Skylander Image to %s\n", outFile);
             skio->WriteSkylanderFile(outFile, buffer);
         } else {
-            printf("Write Skylander to portal\n\n");
+            printf("Write Skylander to portal\n");
             skio->WriteSkylander();
         }
 
         delete skio;
 
-        printf("\nSuccess!\n\n");
+        printf("\n... Success!\n");
         return 0;
 
     } catch (int e) {
@@ -110,10 +123,10 @@ int main(int argc, char *argv[]) {
                 printf("Invalid Skylander File.\n");
                 break;
             case 3:
-                printf("Cannot write to File.\n");
+                printf("Cannot read/write to File.\n");
                 break;
             case 4:
-                printf("Unable to get USB Device List.\n");
+                printf("Skylander File already exists.\n");
                 break;
             case 5:
                 printf("Cannot Find Portal USB.\n");
