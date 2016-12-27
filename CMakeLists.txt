@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(Skylauncher)
+project(SkyDumper)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -24,5 +24,5 @@ else(UNIX)
     message(FATAL_ERROR "Not supported platform")
 endif(UNIX)
 
-add_executable(Skylauncher ${SOURCE_FILES})
-target_link_libraries(Skylauncher ${SL_LIBS})
+add_executable(SkyDumper ${SOURCE_FILES})
+target_link_libraries(SkyDumper ${SL_LIBS})

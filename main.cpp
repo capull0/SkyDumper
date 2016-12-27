@@ -10,7 +10,7 @@ using namespace std;
 void usage() {
     printf("\n"
             "Usage:\n"
-            "Skylauncher [-o <filename> | -d] [-i <filename> [-r]]\n"
+            "SkyDumper [-o <filename> | -d] [-i <filename> [-r]]\n"
             "-i <filename>\t read Skylander Image from file (default: read from portal)\n"
             "-o <filename>\t write Skylander Image to file (default: write to portal)\n"
             "-d\t\t write Skylander image to file <Skylander-ID>.bin\n"
