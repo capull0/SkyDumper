@@ -19,6 +19,7 @@
 #define SKYLANDER_SIZE 1024
 #define MAX_STR 255
 
+#define DEBUG 0
 
 typedef struct {
     unsigned char buf[rw_buf_size];
@@ -30,35 +31,28 @@ class PortalIO {
     hid_device *hPortalHandle;
 
 public:
-    PortalIO() throw(int);
+    PortalIO();
 
     ~PortalIO();
 
-    bool WriteSkylanderToPortal(unsigned char *, unsigned char *);
+    bool ReadBlock(unsigned int, unsigned char [0x10], int);
 
-    bool ReadBlock(unsigned int, unsigned char [0x10], int) throw(int);
+    void SetPortalColor(unsigned char, unsigned char, unsigned char);
 
-    void SetPortalColor(unsigned char, unsigned char, unsigned char) throw(int);
+    bool WriteBlock(unsigned int, unsigned char [0x10], int);
 
-    bool WriteBlock(unsigned int, unsigned char [0x10], int) throw(int);
+    void flash(void);
 
-    void flash(void) throw(int);
+    unsigned char PortalStatus();
 
 private:
-    void OpenPortalHandle() throw(int);
+    void OpenPortalHandle();
 
-    void Write(RWBlock *) throw(int);
+    void Write(RWBlock *);
 
-    void RestartPortal(void) throw(int);
+    void RestartPortal(void);
 
-    void ActivatePortal(int) throw(int);
+    void ActivatePortal(int);
 
-    unsigned char PortalStatus() throw(int);
-
-    void DisconnectPortal(void);
-
-    void ConnectToPortal(void) throw(int);
-
-    bool CheckResponse(RWBlock *, char) throw(int);
-
-}; 
+    bool CheckResponse(RWBlock *, char);
+};

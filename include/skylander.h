@@ -18,25 +18,23 @@ public:
 
     ~SkylanderIO();
 
-    void ReadSkylander() throw(int);
+    void ReadSkylander();
 
-    void WriteSkylander() throw(int);
+    void WriteSkylander();
 
-    void ResetSkylander() throw(int);
+    void ResetSkylander();
 
-    void ReadSkylanderFile(char *name) throw(int);
+    void ReadSkylanderFile(char *name);
 
-    void WriteSkylanderFile(char *name, unsigned char *filedata) throw(int);
+    void WriteSkylanderFile(char *name, unsigned char *filedata);
 
-    void FileExists(char *name) throw (int);
+    void FileExists(char *name);
 
     unsigned char *getSkylander() { return buffer; }
 
     bool IsAccessControlBlock(unsigned int blockIndex) { return blockIndex % 4 == 3; }
 
     void dump(unsigned char *, unsigned int);
-
 };
-
 
 #endif //SKYLAUNCHER_SKYLANDER_H

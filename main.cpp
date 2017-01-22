@@ -64,94 +64,53 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    try {
-        // validate command line options
-        if (!inFile && !outFile && !dump) {
-            printf("missing arguments -i <file> or -o <file>\n");
-            usage();
-            exit(0);
-        }
-
-        skio = new SkylanderIO();
-
-        if (inFile) {
-            printf("Read Skylander Image from %s\n", inFile);
-            skio->ReadSkylanderFile(inFile);
-        } else {
-            printf("Read/Dump Skylander from portal\n");
-            skio->ReadSkylander();
-        }
-
-        if (reset) {
-            printf("Reset Skylander\n");
-            skio->ResetSkylander();
-        }
-
-        buffer = skio->getSkylander();
-        if (verbose)
-            skio->dump(buffer, 1024);
-
-        if (dump) {
-            char f[16];
-            sprintf(f, "%02X%02X.bin", buffer[0x11], buffer[0x10]);
-
-            outFile = new char[strlen(f) + 1];
-            strcpy(outFile, f);
-        }
-
-        if (outFile) {
-            skio->FileExists(outFile);
-            printf("Write Skylander Image to %s\n", outFile);
-            skio->WriteSkylanderFile(outFile, buffer);
-        } else {
-            printf("Write Skylander to portal\n");
-            skio->WriteSkylander();
-        }
-
-        delete skio;
-
-        printf("\n... Success!\n");
-        return 0;
-
-    } catch (int e) {
-
-        switch (e) {
-            case 1:
-                printf("Cannot open File.\n");
-                break;
-            case 2:
-                printf("Invalid Skylander File.\n");
-                break;
-            case 3:
-                printf("Cannot read/write to File.\n");
-                break;
-            case 4:
-                printf("Skylander File already exists.\n");
-                break;
-            case 5:
-                printf("Cannot Find Portal USB.\n");
-                break;
-            case 6:
-                printf("Unable to write to Portal.\n");
-                break;
-            case 7:
-                printf("Invalid Skylander Block.\n");
-                break;
-            case 8:
-                printf("Unable to read Skylander from Portal.\n");
-                break;
-            case 9:
-                printf("Wireless portal not connected.\n");
-                break;
-            case 10:
-                printf("Skylander Write Verify Error.\n");
-                break;
-            case 11:
-                printf("No Skylander detected on portal.\n");
-                break;
-            default:
-                printf("Unknown exception: %d.\n", e);
-                break;
-        }
+    // validate command line options
+    if (!inFile && !outFile && !dump) {
+        printf("missing arguments -i <file> or -o <file>\n");
+        usage();
+        exit(0);
     }
+
+    skio = new SkylanderIO();
+
+    if (inFile) {
+        printf("Read Skylander Image from %s\n", inFile);
+        skio->ReadSkylanderFile(inFile);
+    } else {
+        printf("Read/Dump Skylander from portal\n");
+        skio->ReadSkylander();
+    }
+
+    if (reset) {
+        printf("Reset Skylander\n");
+        skio->ResetSkylander();
+    }
+
+    buffer = skio->getSkylander();
+    if (verbose)
+        skio->dump(buffer, 1024);
+
+    if (dump) {
+        char f[16];
+        sprintf(f, "%02X%02X.bin", buffer[0x11], buffer[0x10]);
+
+        outFile = new char[strlen(f) + 1];
+        strcpy(outFile, f);
+    }
+
+    if (outFile) {
+        skio->FileExists(outFile);
+        printf("Write Skylander Image to %s\n", outFile);
+        skio->WriteSkylanderFile(outFile, buffer);
+    } else {
+        printf("Write Skylander to portal\n");
+        skio->WriteSkylander();
+    }
+
+    skio = NULL;
+    delete skio;
+
+    printf("\n... Success!\n");
+    return 0;
+
 }

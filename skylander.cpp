@@ -14,10 +14,11 @@ SkylanderIO::~SkylanderIO() {
     delete buffer;
 }
 
-void SkylanderIO::ReadSkylander() throw(int) {
+void SkylanderIO::ReadSkylander() {
 
     unsigned char data[0x10];
     unsigned char *ptr;
+    int status;
 
     PortalIO *port;
     port = new PortalIO();
@@ -29,43 +30,34 @@ void SkylanderIO::ReadSkylander() throw(int) {
     bool first = true;
     int count = 0;
     while (!found) {
-        try {
-            // must start with a read of block zero (only skylander 0)
-            port->ReadBlock(0, data, 0);
-            printf("\n");
-            found = true;
-        } catch (int e) {
-            if (e != 11) {
-               throw e;
+        status = port->PortalStatus();
+        if (status > 0) {
+            break;
+        } else {
+            if (first) {
+                printf("waiting for skylander ");
+                first = false;
             } else {
-                if (first) {
-                    printf("waiting for skylander ");
-                    first = false;
-                } else {
-                    count++;
-                    if (count == 10) {
-                        count = 0;
-                        printf(".");
-                    }
+                count++;
+                if (count == 30) {
+                    count = 0;
+                    printf(".");
                 }
             }
             fflush(stdout);
         }
-        if (found) {
-            found = true;
-        }
     }
 
+    printf("\n");
     port->SetPortalColor(0xff, 0x00, 0x00);
     port->SetPortalColor(0xff, 0x00, 0x00);
 
     ptr = buffer;
-    memcpy(ptr, data, sizeof(data));
 
-    for (unsigned int block = 1; block < 0x40; ++block) {
-        ptr += 0x10;
+    for (unsigned int block = 0; block < 0x40; ++block) {
         port->ReadBlock(block, data, 0);
         memcpy(ptr, data, sizeof(data));
+        ptr += 0x10;
     }
 
     port->SetPortalColor(0x00, 0x00, 0xff);
@@ -73,10 +65,41 @@ void SkylanderIO::ReadSkylander() throw(int) {
     delete port;
 }
 
-void SkylanderIO::WriteSkylander() throw(int) {
+void SkylanderIO::WriteSkylander() {
     PortalIO *port;
-    port = new PortalIO();
     bool selectAccessControlBlock;
+    int status;
+
+    port = new PortalIO();
+    port->SetPortalColor(0x00, 0xff, 0x00);
+    port->SetPortalColor(0x00, 0xff, 0x00);
+    port->SetPortalColor(0x00, 0xff, 0x00);
+
+    bool found = false;
+    bool first = true;
+    int count = 0;
+    while (!found) {
+        status = port->PortalStatus();
+        if (status > 0) {
+            break;
+        } else {
+            if (first) {
+                printf("waiting for skylander ");
+                first = false;
+            } else {
+                count++;
+                if (count == 30) {
+                    count = 0;
+                    printf(".");
+                }
+            }
+            fflush(stdout);
+        }
+    }
+
+    printf("\n");
+    port->SetPortalColor(0xff, 0x00, 0x00);
+    port->SetPortalColor(0xff, 0x00, 0x00);
 
     for (int i = 0; i < 2; i++) {
         selectAccessControlBlock = i == 0;
@@ -89,7 +112,7 @@ void SkylanderIO::WriteSkylander() throw(int) {
     }
 }
 
-void SkylanderIO::ResetSkylander() throw(int) {
+void SkylanderIO::ResetSkylander() {
     for (unsigned int block = 0; block < 0x40; ++block) {
         int offset = block * 0x10;
         if (!IsAccessControlBlock(block) && block > 0x4 && block != 0x22 && block != 0x3e) {
@@ -102,7 +125,7 @@ void SkylanderIO::ResetSkylander() throw(int) {
 
 }
 
-void SkylanderIO::ReadSkylanderFile(char *name) throw(int) {
+void SkylanderIO::ReadSkylanderFile(char *name) {
     FILE *file;
     int count;
     unsigned long fileLen;
@@ -110,7 +133,8 @@ void SkylanderIO::ReadSkylanderFile(char *name) throw(int) {
     //Open file
     file = fopen(name, "rb");
     if (!file) {
-        throw 1;
+        printf("Cannot open File.\n");
+        exit(1);
     }
 
     //Get file length
@@ -119,37 +143,41 @@ void SkylanderIO::ReadSkylanderFile(char *name) throw(int) {
     fseek(file, 0, SEEK_SET);
 
     if (fileLen != 1024) {
-        throw 2;
+        printf("Invalid Skylander File.\n");
+        exit(1);
     }
     //Read file contents into buffer
     count = (int) fread(buffer, fileLen, 1, file);
     if (count < 1) {
         fclose(file);
-        throw 3;
+        printf("Cannot read/write to File.\n");
+        exit(1);
     }
     fclose(file);
 }
 
-void SkylanderIO::FileExists(char *name) throw (int) {
+void SkylanderIO::FileExists(char *name)  {
     if (realpath(name, NULL)) {
-        throw 4;
+        printf("Skylander File already exists.\n");
+        exit(1);
     }
 }
 
-void SkylanderIO::WriteSkylanderFile(char *name, unsigned char *filedata) throw(int) {
+void SkylanderIO::WriteSkylanderFile(char *name, unsigned char *filedata) {
     FILE *file;
     int count;
 
     file = fopen(name, "wb");
     if (!file) {
-        throw 1;
+        printf("Cannot open File.\n");
+        exit(1);
     }
     count = (int) fwrite(filedata, 1024, 1, file);
     if (count < 1) {
         fclose(file);
-        throw 3;
+        printf("Cannot read/write to File.\n");
+        exit(1);
     }
-
     fclose(file);
 }
 
@@ -180,5 +208,3 @@ void SkylanderIO::dump(unsigned char *c, unsigned int n) {
         printf("\n");
     }
 }
-
-

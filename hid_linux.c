@@ -893,6 +893,7 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
     int report_number = data[0];
     int skipped_report_id = 0;
 
+
     if (report_number == 0x0) {
         data++;
         length--;
@@ -900,7 +901,9 @@ int HID_API_EXPORT hid_write(hid_device *dev, const unsigned char *data, size_t 
     }
 
 
-    if (dev->output_endpoint <= 0) {
+
+    //if (dev->output_endpoint <= 0) {
+    if (1) {
         /* No interrput out endpoint. Use the Control Endpoint */
         res = libusb_control_transfer(dev->device_handle,
                                       LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_OUT,
